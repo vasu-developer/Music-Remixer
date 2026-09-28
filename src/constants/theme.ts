@@ -1,55 +1,83 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
+import { Platform, Dimensions } from 'react-native';
 
-import '@/global.css';
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-import { Platform } from 'react-native';
+export const DJColors = {
+  // Console chassis & plates
+  chassis: '#090A0D',
+  surface: '#111317',
+  surfaceRaised: '#171A21',
+  surfaceInset: '#0E1014',
+
+  // Borders
+  borderSubtle: '#21252D',
+  borderStrong: '#2F3540',
+  borderHighlight: '#3E4554',
+
+  // Deck accents
+  deckA: '#00E5FF', // Electric Cyan
+  deckAGlow: 'rgba(0, 229, 255, 0.25)',
+  deckADark: '#08333D',
+
+  deckB: '#FF9100', // Amber Flare
+  deckBGlow: 'rgba(255, 145, 0, 0.25)',
+  deckBDark: '#472900',
+
+  // Functional accents
+  master: '#FF2A4D', // Red indicator
+  cue: '#00B0FF', // Cue blue
+  sync: '#00E676', // Green active
+  syncGlow: 'rgba(0, 230, 118, 0.25)',
+  warning: '#FFD600',
+
+  // Typography
+  textPrimary: '#F1F3F7',
+  textSecondary: '#8B93A2',
+  textMuted: '#4D5462',
+  textDeckA: '#66EFFF',
+  textDeckB: '#FFA833',
+
+  // Hardware controls
+  platter: '#13151A',
+  platterRim: '#252932',
+  faderTrack: '#0A0B0E',
+  faderCap: '#262A33',
+  faderCapBorder: '#454C5B',
+  knobBase: '#15171D',
+  knobCap: '#20242D',
+
+  // VU Meter segments
+  vuGreen: '#00E676',
+  vuYellow: '#FFD600',
+  vuRed: '#FF1744',
+  vuOff: '#191C22',
+} as const;
 
 export const Colors = {
   light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
+    text: DJColors.textPrimary,
+    background: DJColors.chassis,
+    backgroundElement: DJColors.surface,
+    backgroundSelected: DJColors.surfaceRaised,
+    textSecondary: DJColors.textSecondary,
   },
   dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
+    text: DJColors.textPrimary,
+    background: DJColors.chassis,
+    backgroundElement: DJColors.surface,
+    backgroundSelected: DJColors.surfaceRaised,
+    textSecondary: DJColors.textSecondary,
   },
 } as const;
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: 'var(--font-display)',
-    serif: 'var(--font-serif)',
-    rounded: 'var(--font-rounded)',
-    mono: 'var(--font-mono)',
-  },
-});
+export const Fonts = {
+  sans: 'normal',
+  serif: 'serif',
+  rounded: 'normal',
+  mono: 'monospace',
+};
 
 export const Spacing = {
   half: 2,
@@ -61,5 +89,41 @@ export const Spacing = {
   six: 64,
 } as const;
 
+export const DJFonts = {
+  display: Platform.select({ ios: 'System', default: 'sans-serif-medium' }),
+  mono: Platform.select({ ios: 'Menlo', default: 'monospace' }),
+  condensed: Platform.select({ ios: 'System', default: 'sans-serif-condensed' }),
+};
+
+export const DJSpacing = {
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
+  xxl: 24,
+  xxxl: 32,
+};
+
+export const DJTouchTargets = {
+  min: 44,
+  buttonSmall: 36,
+  buttonStandard: 44,
+  buttonLarge: 52,
+  knobSmall: 48,
+  knobStandard: 56,
+  jogWheelSmall: 140,
+  jogWheelStandard: 170,
+};
+
+export const Layout = {
+  window: {
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT,
+  },
+  isSmallDevice: SCREEN_WIDTH < 375,
+  isTablet: SCREEN_WIDTH >= 768,
+};
+
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
-export const MaxContentWidth = 800;
+export const MaxContentWidth = 900;

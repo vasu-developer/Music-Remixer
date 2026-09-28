@@ -1,0 +1,7 @@
+expo.modules.localmusic.local-music-pngs-0 /home/vasudevverma/Documents/Music Player/android-remixer/modules/local-music/android/build/generated/res/pngs/release
+expo.modules.localmusic.local-music-resValues-1 /home/vasudevverma/Documents/Music Player/android-remixer/modules/local-music/android/build/generated/res/resValues/release
+expo.modules.localmusic.local-music-mergeReleaseResources-2 /home/vasudevverma/Documents/Music Player/android-remixer/modules/local-music/android/build/intermediates/incremental/release/mergeReleaseResources/merged.dir
+expo.modules.localmusic.local-music-mergeReleaseResources-3 /home/vasudevverma/Documents/Music Player/android-remixer/modules/local-music/android/build/intermediates/incremental/release/mergeReleaseResources/stripped.dir
+expo.modules.localmusic.local-music-release-4 /home/vasudevverma/Documents/Music Player/android-remixer/modules/local-music/android/build/intermediates/merged_res/release/mergeReleaseResources
+expo.modules.localmusic.local-music-main-5 /home/vasudevverma/Documents/Music Player/android-remixer/modules/local-music/android/src/main/res
+expo.modules.localmusic.local-music-release-6 /home/vasudevverma/Documents/Music Player/android-remixer/modules/local-music/android/src/release/res

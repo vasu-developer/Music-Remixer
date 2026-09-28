@@ -1,0 +1,6 @@
+{
+  "platforms": ["android"],
+  "android": {
+    "modules": ["expo.modules.audioplayback.AudioPlaybackModule", "expo.modules.audioplayback.NativeAudioModule"]
+  }
+}

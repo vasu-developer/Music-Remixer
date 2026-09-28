@@ -1,0 +1,24 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const ts = require('typescript');
+const Module = require('node:module');
+const file = require('node:path').resolve('src/core/library/waveform.ts');
+let calls = 0, resolve;
+const native = { getWaveform: () => { calls++; return new Promise(r => resolve = r); } };
+const mod = new Module(file);
+mod.require = name => name === 'expo' ? { requireOptionalNativeModule: () => native } : { Platform: { OS: 'android' } };
+mod._compile(ts.transpileModule(fs.readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText, file);
+(async () => {
+  const { getTrackWaveform } = mod.exports;
+  const track = { id: '1', uri: 'content://media/external/audio/media/1', dateModified: 10, duration: 200, waveformData: [] };
+  const a = getTrackWaveform(track), b = getTrackWaveform(track);
+  assert.equal(a, b); assert.equal(calls, 1);
+  resolve(Array(192).fill(.5)); await a;
+  assert.equal((await getTrackWaveform(track))[0], .5); assert.equal(calls, 1);
+  const changed = { ...track, dateModified: 11 };
+  const invalid = getTrackWaveform(changed); resolve([NaN]); await assert.rejects(invalid, /Invalid waveform/);
+  const retry = getTrackWaveform(changed); resolve(Array(192).fill(0)); assert.equal((await retry)[0], 0);
+  assert.equal(calls, 3);
+  assert.deepEqual(await getTrackWaveform({ ...track, waveformData: [.1, .2] }), [.1, .2]);
+  console.log('PASS: waveform single-flight, cache, invalidation, invalid payload, retry and silence.');
+})().catch(e => { console.error(e); process.exitCode = 1; });

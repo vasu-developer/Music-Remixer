@@ -1,0 +1,26 @@
+-- Merging decision tree log ---
+manifest
+ADDED from /home/vasudevverma/Documents/Music Player/android-remixer/modules/local-music/android/src/main/AndroidManifest.xml:1:1-4:12
+INJECTED from /home/vasudevverma/Documents/Music Player/android-remixer/modules/local-music/android/src/main/AndroidManifest.xml:1:1-4:12
+	package
+		INJECTED from /home/vasudevverma/Documents/Music Player/android-remixer/modules/local-music/android/src/main/AndroidManifest.xml
+	xmlns:android
+		ADDED from /home/vasudevverma/Documents/Music Player/android-remixer/modules/local-music/android/src/main/AndroidManifest.xml:1:11-69
+uses-permission#android.permission.READ_MEDIA_AUDIO
+ADDED from /home/vasudevverma/Documents/Music Player/android-remixer/modules/local-music/android/src/main/AndroidManifest.xml:2:3-73
+	android:name
+		ADDED from /home/vasudevverma/Documents/Music Player/android-remixer/modules/local-music/android/src/main/AndroidManifest.xml:2:20-70
+uses-permission#android.permission.READ_EXTERNAL_STORAGE
+ADDED from /home/vasudevverma/Documents/Music Player/android-remixer/modules/local-music/android/src/main/AndroidManifest.xml:3:3-105
+	android:maxSdkVersion
+		ADDED from /home/vasudevverma/Documents/Music Player/android-remixer/modules/local-music/android/src/main/AndroidManifest.xml:3:76-102
+	android:name
+		ADDED from /home/vasudevverma/Documents/Music Player/android-remixer/modules/local-music/android/src/main/AndroidManifest.xml:3:20-75
+uses-sdk
+INJECTED from /home/vasudevverma/Documents/Music Player/android-remixer/modules/local-music/android/src/main/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /home/vasudevverma/Documents/Music Player/android-remixer/modules/local-music/android/src/main/AndroidManifest.xml
+INJECTED from /home/vasudevverma/Documents/Music Player/android-remixer/modules/local-music/android/src/main/AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from /home/vasudevverma/Documents/Music Player/android-remixer/modules/local-music/android/src/main/AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from /home/vasudevverma/Documents/Music Player/android-remixer/modules/local-music/android/src/main/AndroidManifest.xml
