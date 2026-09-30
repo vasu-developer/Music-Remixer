@@ -15,6 +15,8 @@ export interface VerticalScrollerProps {
   accentColor?: string;
   height?: number;
   width?: number;
+  railWidth?: number;
+  dragOnly?: boolean;
   centerDetent?: boolean;
   bipolar?: boolean;
   showValue?: boolean;
@@ -33,6 +35,8 @@ export const VerticalScroller: React.FC<VerticalScrollerProps> = ({
   accentColor = DJColors.deckA,
   height = 80,
   width = 34,
+  railWidth = width,
+  dragOnly = false,
   centerDetent = true,
   bipolar = true,
   showValue = true,
@@ -42,7 +46,7 @@ export const VerticalScroller: React.FC<VerticalScrollerProps> = ({
 }) => {
   const capHeight = 14;
   const { position, dragging, gesture } = useControlGesture(
-    value, min, max, height, capHeight, false, onChange, disabled, bipolar && centerDetent, accessibilityLabel || label);
+    value, min, max, height, capHeight, false, onChange, disabled, bipolar && centerDetent, accessibilityLabel || label, dragOnly);
   const isAtCenter = bipolar && Math.abs(value) < 0.04;
   const capStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: (1 - (position.value - min) / (max - min)) * (height - capHeight) }],
@@ -69,9 +73,17 @@ export const VerticalScroller: React.FC<VerticalScrollerProps> = ({
 
   return (
     <View
-      style={[styles.container, { width }]}
+      style={[styles.container, { width, opacity: disabled ? 0.35 : 1 }]}
       accessible={true}
       accessibilityRole="adjustable"
+      accessibilityState={{ disabled }}
+      accessibilityValue={{ min, max, now: value, text: formattedValue }}
+      accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
+      onAccessibilityAction={event => {
+        if (disabled) return;
+        const direction = event.nativeEvent.actionName === 'increment' ? 1 : -1;
+        onChange(Math.max(min, Math.min(max, value + direction * (max - min) / 30)));
+      }}
       accessibilityLabel={accessibilityLabel || (label + ': ' + formattedValue)}>
       <Text style={styles.label} numberOfLines={1}>
         {label}
@@ -91,10 +103,11 @@ export const VerticalScroller: React.FC<VerticalScrollerProps> = ({
       )}
 
       <GestureDetector gesture={gesture}>
+      <View style={{ width, height, alignItems: 'center' }}>
       <Animated.View
         style={[
           styles.trackArea,
-          { height, width },
+          { height, width: railWidth },
           trackStyle,
         ]}>
         {showTicks && (
@@ -113,6 +126,7 @@ export const VerticalScroller: React.FC<VerticalScrollerProps> = ({
           <Animated.View style={[styles.capCenterNotch, notchStyle]} />
         </Animated.View>
       </Animated.View>
+      </View>
       </GestureDetector>
     </View>
   );

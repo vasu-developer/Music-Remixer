@@ -26,6 +26,8 @@ export type MetersUpdateListener = (meters: EngineMeters) => void;
  * this exact contract without requiring any UI refactoring.
  */
 export interface IAudioEngine {
+  setMasterFx?: (index: number, value: number) => void;
+  masterFxIssue?: () => string | null;
   /** Initialize the engine, allocating audio tracks / buffers */
   initialize(): Promise<void>;
 

@@ -1,4 +1,4 @@
-import { ControlTrace, logControlTrace } from './controlTrace';
+import { ControlTrace } from './controlTrace';
 import { requireOptionalNativeModule } from 'expo';
 import { Platform } from 'react-native';
 import { DeckId, EQBand } from '@/types';
@@ -85,6 +85,7 @@ export interface NativeEngineDiagnostics {
 }
 
 interface NativeEngineModule {
+  setMasterFx?(index: number, value: number): void;
   initialize(): Promise<boolean>;
   loadTrack(deckId: string, uri: string): Promise<{ success: boolean; duration: number }>;
   play(deckId: string): Promise<boolean>;
@@ -113,40 +114,23 @@ function requireEngine(): NativeEngineModule {
 
 /** Phase 3.3.2 Dual-Deck Native PCM Audio Decoding & Playback through Oboe. */
 export const NativeAudioEngine = {
+  supportsMasterFx: () => typeof native?.setMasterFx === 'function',
+  setMasterFx: (index: number, value: number) => {
+    const engine = requireEngine();
+    if (!engine.setMasterFx) throw new Error('Install the updated APK to enable master sound controls.');
+    engine.setMasterFx(index, value);
+  },
   isAvailable: () => native !== null && typeof (native as Partial<NativeEngineModule>).getDiagnostics === 'function',
   initialize: () => requireEngine().initialize(),
   loadTrack: (deckId: DeckId, uri: string) => requireEngine().loadTrack(deckId, uri),
-  play: async (deckId: DeckId, trace?: ControlTrace) => {
-    logControlTrace(trace, 'NATIVE_CALL', `action=play deck=${deckId}`);
-    try {
-      const result = await requireEngine().play(deckId);
-      logControlTrace(trace, 'NATIVE_RESULT', `action=play deck=${deckId} success=${result}`);
-      return result;
-    } catch (error) {
-      logControlTrace(trace, 'NATIVE_ERROR', `action=play deck=${deckId} error=${String(error)}`);
-      throw error;
-    }
-  },
-  pause: async (deckId: DeckId, trace?: ControlTrace) => {
-    logControlTrace(trace, 'NATIVE_CALL', `action=pause deck=${deckId}`);
-    try {
-      const result = await requireEngine().pause(deckId);
-      logControlTrace(trace, 'NATIVE_RESULT', `action=pause deck=${deckId} success=${result}`);
-      return result;
-    } catch (error) {
-      logControlTrace(trace, 'NATIVE_ERROR', `action=pause deck=${deckId} error=${String(error)}`);
-      throw error;
-    }
-  },
+  play: async (deckId: DeckId, _trace?: ControlTrace) => requireEngine().play(deckId),
+  pause: async (deckId: DeckId, _trace?: ControlTrace) => requireEngine().pause(deckId),
   start: () => requireEngine().start(),
   stop: () => requireEngine().stop(),
   seek: (deckId: DeckId, positionSeconds: number) => requireEngine().seek(deckId, positionSeconds),
   release: () => requireEngine().release(),
   setTestToneVolume: (volume: number) => requireEngine().setTestToneVolume(volume),
   setVolume: (deckId: DeckId, volume: number, seq?: number, tGesture?: number) => {
-    if (seq && seq > 0) {
-      console.log(`[VOL_TRACE] seq=${seq} NATIVE_CALL deck=${deckId} vol=${volume.toFixed(2)} deltaFromGesture=${Date.now() - (tGesture ?? 0)}ms`);
-    }
     requireEngine().setVolume(deckId, volume, seq, tGesture);
   },
   setEQ: (deckId: DeckId, band: EQBand, value: number, kill: boolean) => {

@@ -1,6 +1,12 @@
 {
-  "platforms": ["android"],
+  "platforms": [
+    "android"
+  ],
   "android": {
-    "modules": ["expo.modules.audioplayback.AudioPlaybackModule", "expo.modules.audioplayback.NativeAudioModule"]
+    "modules": [
+      "expo.modules.audioplayback.AudioPlaybackModule",
+      "expo.modules.audioplayback.NativeAudioModule",
+      "expo.modules.audioplayback.SystemEqualizerModule"
+    ]
   }
 }

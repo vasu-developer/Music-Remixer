@@ -24,6 +24,8 @@ export default function RootLayout() {
         <Stack.Screen name="index" />
         <Stack.Screen name="library" />
         <Stack.Screen name="settings" />
+        <Stack.Screen name="equalizer" />
+        <Stack.Screen name="system-audio" />
       </Stack>
     </GestureHandlerRootView>
   );

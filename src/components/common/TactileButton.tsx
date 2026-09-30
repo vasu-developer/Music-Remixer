@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { ControlTrace, createControlTrace, logControlTrace } from '@/core/audio/controlTrace';
+import React from 'react';
+import { ControlTrace } from '@/core/audio/controlTrace';
 import {
   Pressable,
   Text,
@@ -39,15 +39,6 @@ export const TactileButton: React.FC<TactileButtonProps> = ({
   labelStyle,
   accessibilityLabel,
 }) => {
-  const activeTrace = useRef<ControlTrace | undefined>(undefined);
-  const traceEvent = (stage: string, handler?: (trace?: ControlTrace) => void) => {
-    if (!__DEV__) { handler?.(); return; }
-    if (stage === 'UI_PRESS_IN' || !activeTrace.current) activeTrace.current = createControlTrace();
-    const trace = activeTrace.current;
-    logControlTrace(trace, stage, `control=${JSON.stringify(accessibilityLabel || label || variant)}`);
-    if (stage === 'UI_PRESS') activeTrace.current = undefined;
-    handler?.(trace);
-  };
   const getVariantStyles = (pressed: boolean) => {
     switch (variant) {
       case 'deckA':
@@ -136,9 +127,9 @@ export const TactileButton: React.FC<TactileButtonProps> = ({
 
   return (
     <Pressable
-      onPress={() => traceEvent('UI_PRESS', onPress)}
-      onPressIn={() => traceEvent('UI_PRESS_IN', onPressIn)}
-      onPressOut={() => traceEvent('UI_PRESS_OUT', onPressOut)}
+      onPress={() => onPress?.()}
+      onPressIn={() => onPressIn?.()}
+      onPressOut={() => onPressOut?.()}
       disabled={disabled}
       accessible={true}
       accessibilityRole="button"

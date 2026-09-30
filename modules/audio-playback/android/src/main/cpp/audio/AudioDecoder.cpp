@@ -147,9 +147,6 @@ bool AudioDecoder::open(int fd, int64_t offset, int64_t length, int targetSample
     resampleOutBuffer_.resize(32768 * 2);
   }
 
-  __android_log_print(ANDROID_LOG_INFO, kTag,
-    "Decoder opened: %s, %d Hz, %d channels, encoding=%s, duration: %lld us",
-    mimeType_.c_str(), trackSampleRate_, trackChannels_, getPcmEncodingName().c_str(), (long long)durationUs_);
 
   renderGate_.resume();
   decodeThread_ = std::thread(&AudioDecoder::decodeThreadLoop, this);
@@ -159,13 +156,13 @@ bool AudioDecoder::open(int fd, int64_t offset, int64_t length, int targetSample
 void AudioDecoder::start() {
   if (isLoaded_.load(std::memory_order_acquire)) {
     isPlaying_.store(true, std::memory_order_release);
-    __android_log_print(ANDROID_LOG_INFO, kTag, "Deck %c Playback started", deckId_);
+
   }
 }
 
 void AudioDecoder::stop() {
   isPlaying_.store(false, std::memory_order_release);
-  __android_log_print(ANDROID_LOG_INFO, kTag, "Deck %c Playback stopped", deckId_);
+
 }
 
 
@@ -216,21 +213,7 @@ void AudioDecoder::cleanupLocked() {
   isPlaying_.store(false, std::memory_order_relaxed);
 
   if (decodeThread_.joinable()) {
-    const auto sysNow = std::chrono::system_clock::now().time_since_epoch();
-    const int64_t tBegin = std::chrono::duration_cast<std::chrono::milliseconds>(sysNow).count();
-    const auto t0 = std::chrono::steady_clock::now();
-    __android_log_print(ANDROID_LOG_INFO, "RemixerOboeTrace",
-                        "[DECODER_JOIN] Deck %c BEGIN t=%lld", deckId_, (long long)tBegin);
-
     decodeThread_.join();
-
-    const auto t1 = std::chrono::steady_clock::now();
-    const auto sysEnd = std::chrono::system_clock::now().time_since_epoch();
-    const int64_t tEnd = std::chrono::duration_cast<std::chrono::milliseconds>(sysEnd).count();
-    const auto durMs = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
-    __android_log_print(ANDROID_LOG_INFO, "RemixerOboeTrace",
-                        "[DECODER_JOIN] Deck %c END t=%lld duration=%lld ms",
-                        deckId_, (long long)tEnd, (long long)durMs);
   }
 
   if (codec_) {
@@ -294,7 +277,7 @@ void AudioDecoder::render(float* output, int32_t frames, int32_t channels) noexc
 
 void AudioDecoder::decodeThreadLoop() {
   setpriority(PRIO_PROCESS, 0, 10);
-  __android_log_print(ANDROID_LOG_INFO, kTag, "Decoder thread started for Deck %c (nice=10)", deckId_);
+
 
   bool sawInputEos = false;
   int currentSampleRate = trackSampleRate_ > 0 ? trackSampleRate_ : 44100;
@@ -334,7 +317,7 @@ void AudioDecoder::decodeThreadLoop() {
           if (sampleSize < 0) {
             sawInputEos = true;
             AMediaCodec_queueInputBuffer(codec_, inIdx, 0, 0, 0, AMEDIACODEC_BUFFER_FLAG_END_OF_STREAM);
-            __android_log_print(ANDROID_LOG_INFO, kTag, "Extractor reached EOS");
+
           } else {
             int64_t pts = AMediaExtractor_getSampleTime(extractor_);
             AMediaCodec_queueInputBuffer(codec_, inIdx, 0, sampleSize, pts, 0);
@@ -474,7 +457,7 @@ void AudioDecoder::decodeThreadLoop() {
       AMediaCodec_releaseOutputBuffer(codec_, outIdx, false);
 
       if (info.flags & AMEDIACODEC_BUFFER_FLAG_END_OF_STREAM) {
-        __android_log_print(ANDROID_LOG_INFO, kTag, "Decoder reached END_OF_STREAM");
+
         isEof_.store(true, std::memory_order_relaxed);
         break;
       }
@@ -488,16 +471,13 @@ void AudioDecoder::decodeThreadLoop() {
           pcmEncoding_ = enc;
         }
         AMediaFormat_delete(newFormat);
-        __android_log_print(ANDROID_LOG_INFO, kTag, "Output format changed: %d Hz, %d channels, encoding=%s",
-                            currentSampleRate, currentChannels, getPcmEncodingName().c_str());
+
       }
     } else if (outIdx == AMEDIACODEC_INFO_TRY_AGAIN_LATER) {
       std::this_thread::sleep_for(std::chrono::milliseconds(2));
     }
   }
 
-  __android_log_print(ANDROID_LOG_INFO, kTag, "Decoder thread finished: total decoded=%lld frames",
-                      (long long)decodedFrames_.load(std::memory_order_relaxed));
 }
 
 } // namespace remixer

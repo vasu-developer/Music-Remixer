@@ -1,4 +1,4 @@
-import { ControlTrace, logControlTrace } from '@/core/audio/controlTrace';
+import { ControlTrace } from '@/core/audio/controlTrace';
 import { create } from 'zustand';
 import { DeckId, DeckState, Track } from '@/types';
 import { getAudioEngine } from '@/core/audio';
@@ -83,10 +83,10 @@ export const useDeckStore = create<DeckStore>((set, get) => ({
   },
 
   play: async (deckId: DeckId, trace?: ControlTrace) => {
-    logControlTrace(trace, 'STORE_PLAY', `deck=${deckId}`);
+
     const deckKey = deckId === 'A' ? 'deckA' : 'deckB';
     const deck = get()[deckKey];
-    if (!deck.loadedTrack) { logControlTrace(trace, 'SKIPPED', `deck=${deckId} reason=no_track`); return; }
+    if (!deck.loadedTrack) { return; }
 
     const engine = getAudioEngine();
     await engine.play(deckId, trace);
@@ -97,7 +97,7 @@ export const useDeckStore = create<DeckStore>((set, get) => ({
   },
 
   pause: async (deckId: DeckId, trace?: ControlTrace) => {
-    logControlTrace(trace, 'STORE_PAUSE', `deck=${deckId}`);
+
     const deckKey = deckId === 'A' ? 'deckA' : 'deckB';
     const engine = getAudioEngine();
     await engine.pause(deckId, trace);
@@ -108,7 +108,7 @@ export const useDeckStore = create<DeckStore>((set, get) => ({
   },
 
   togglePlay: async (deckId: DeckId, trace?: ControlTrace) => {
-    logControlTrace(trace, 'STORE_TOGGLEPLAY', `deck=${deckId}`);
+
     const deckKey = deckId === 'A' ? 'deckA' : 'deckB';
     const deck = get()[deckKey];
     if (deck.isPlaying) {
@@ -262,7 +262,6 @@ export const useDeckStore = create<DeckStore>((set, get) => ({
   },
 
   setVolume: async (deckId: DeckId, volume: number, seq?: number, tGesture?: number) => {
-    if (seq) console.log(`[VOL_TRACE] seq=${seq} STORE_SET_VOLUME deck=${deckId} vol=${volume} deltaGestureToStore=${Date.now() - (tGesture ?? 0)}ms`);
     const deckKey = deckId === 'A' ? 'deckA' : 'deckB';
     const clamped = Math.max(0, Math.min(1.0, volume));
 

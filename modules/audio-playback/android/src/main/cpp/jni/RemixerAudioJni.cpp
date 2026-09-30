@@ -7,6 +7,9 @@ static remixer::RemixerAudioEngine& engine() {
 }
 
 extern "C" {
+JNIEXPORT void JNICALL Java_expo_modules_audioplayback_NativeAudioBridge_setMasterFx(
+    JNIEnv*, jobject, jint index, jfloat value) { engine().setMasterFx(index, value); }
+
 
 JNIEXPORT jboolean JNICALL Java_expo_modules_audioplayback_NativeAudioBridge_initialize(JNIEnv*, jobject) {
   return engine().initialize();

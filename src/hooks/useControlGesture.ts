@@ -7,42 +7,25 @@ import { getAudioEngine } from '@/core/audio';
 // One pending JS delivery per control. The UI retains the newest value while JS is busy.
 export function useControlGesture(value: number, min: number, max: number,
   length: number, cap: number, horizontal: boolean, onChange: (value: number, seq?: number, tGesture?: number) => void,
-  disabled = false, detent = false, traceLabel = 'control', relative = false) {
+  disabled = false, detent = false, _traceLabel = 'control', relative = false) {
   const position = useSharedValue(value);
   const dragging = useSharedValue(false);
   const hasInteracted = useSharedValue(false);
   const lastCommit = useSharedValue(0);
   const pending = useSharedValue(false);
   const delivered = useSharedValue(0);
-  const latest = useSharedValue({ value, revision: 0, final: false, time: 0 });
+  const latest = useSharedValue({ value, revision: 0, final: false });
   const start = useSharedValue(value);
   const callback = useRef(onChange);
   callback.current = onChange;
-  const labelRef = useRef(traceLabel);
-  labelRef.current = traceLabel;
   const mounted = useRef(true);
-  const summary = useRef({ count: 0, replaced: 0, maxAgeMs: 0, maxWakeDelayMs: 0, lastRevision: 0, lastReport: 0 });
-  const commit = useCallback((scheduledAt: number) => {
+  const commit = useCallback(() => {
     if (!mounted.current) return;
     // Read once on delivery, not when scheduling: stale positions never form a FIFO.
     const snapshot = latest.value;
     try {
       callback.current(snapshot.value);
       if (snapshot.final) getAudioEngine().flushControls?.();
-      if (__DEV__) {
-        const now = Date.now();
-        const stats = summary.current;
-        stats.count++;
-        stats.maxWakeDelayMs = Math.max(stats.maxWakeDelayMs, now - scheduledAt);
-        stats.replaced += Math.max(0, snapshot.revision - stats.lastRevision - 1);
-        stats.lastRevision = snapshot.revision;
-        stats.maxAgeMs = Math.max(stats.maxAgeMs, now - snapshot.time);
-        if (now - stats.lastReport >= 2000) {
-          console.log(`[CONTROL_STATS] control=${JSON.stringify(labelRef.current)} delivered=${stats.count} coalesced=${stats.replaced} maxLatestAgeMs=${stats.maxAgeMs} maxWakeDelayMs=${stats.maxWakeDelayMs} final=${snapshot.final}`);
-          stats.count = stats.replaced = stats.maxAgeMs = stats.maxWakeDelayMs = 0;
-          stats.lastReport = now;
-        }
-      }
     } finally {
       scheduleOnUI((revision: number) => {
         'worklet';
@@ -59,7 +42,7 @@ export function useControlGesture(value: number, min: number, max: number,
         (snapshot.final || now - lastCommit.value >= 16)) {
       pending.value = true;
       lastCommit.value = now;
-      scheduleOnRN(commit, now);
+      scheduleOnRN(commit);
     }
   });
   useEffect(() => {
@@ -84,7 +67,7 @@ export function useControlGesture(value: number, min: number, max: number,
     let v = Math.max(min, Math.min(max, next));
     if (detent && Math.abs(v) < (max - min) * 0.045) v = 0;
     position.value = v;
-    latest.value = { value: v, revision: latest.value.revision + 1, final, time: Date.now() };
+    latest.value = { value: v, revision: latest.value.revision + 1, final };
   };
   const gesture = Gesture.Pan().enabled(!disabled).minDistance(0)
     .onStart((e) => {

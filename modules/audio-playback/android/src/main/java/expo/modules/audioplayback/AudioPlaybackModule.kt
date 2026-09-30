@@ -52,7 +52,6 @@ class AudioPlaybackModule : Module() {
   private val becomingNoisyReceiver = object : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
       if (intent?.action == AudioManager.ACTION_AUDIO_BECOMING_NOISY) {
-        Log.i(TAG, "Audio becoming noisy (headphones unplugged) - pausing all decks")
         moduleScope.launch {
           wasPlayingAOnFocusLoss = false
           wasPlayingBOnFocusLoss = false
@@ -159,8 +158,7 @@ class AudioPlaybackModule : Module() {
     }.runOnQueue(moduleScope)
 
     AsyncFunction("setMixerVolumes") { volumeA: Double, volumeB: Double ->
-      val t0 = System.currentTimeMillis()
-      android.util.Log.i("RemixerVolumeDiag", "[DIAG:NATIVE_BRIDGE_MEDIAPLAYER] setMixerVolumes(A=$volumeA, B=$volumeB) on thread=${Thread.currentThread().name} at t=$t0 ms")
+
       deckA.setVolume(volumeA.toFloat())
       deckB.setVolume(volumeB.toFloat())
     }.runOnQueue(moduleScope)
@@ -363,7 +361,6 @@ class AudioPlaybackModule : Module() {
   }
 
   private fun handleAudioFocusChange(focusChange: Int) {
-    Log.d(TAG, "Audio focus changed: $focusChange")
     when (focusChange) {
       AudioManager.AUDIOFOCUS_LOSS -> {
         hasAudioFocus = false

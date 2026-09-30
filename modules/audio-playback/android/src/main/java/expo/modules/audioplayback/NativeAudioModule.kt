@@ -8,6 +8,10 @@ import kotlinx.coroutines.launch
 class NativeAudioModule : Module() {
   override fun definition() = ModuleDefinition {
     Name("NativeAudioEngine")
+    Function("setMasterFx") { index: Int, value: Double ->
+      require(index in 0..16 && value.isFinite()) { "Invalid master audio control" }
+      NativeAudioBridge.setMasterFx(index, value.toFloat())
+    }
 
     AsyncFunction("initialize") {
       NativeAudioBridge.initialize()
@@ -53,10 +57,6 @@ class NativeAudioModule : Module() {
     Function("setVolume") { deckId: String, volume: Double, seq: Int?, tGesture: Double? ->
       val s = seq ?: 0
       val t = tGesture?.toLong() ?: 0L
-      if (s > 0) {
-        val now = System.currentTimeMillis()
-        android.util.Log.i("VOL_TRACE", "seq=$s KOTLIN_RECV deck=$deckId vol=$volume deltaGestureToKotlin=${now - t}ms")
-      }
       val idx = NativeAudioBridge.deckToIndex(deckId)
       NativeAudioBridge.setVolume(idx, volume.toFloat(), s, t)
     }

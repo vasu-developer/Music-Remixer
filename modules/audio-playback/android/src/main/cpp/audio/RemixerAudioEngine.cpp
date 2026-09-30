@@ -62,9 +62,7 @@ bool RemixerAudioEngine::initializeLocked() {
     decks_[1].decoder.setDeckId('B');
     callbackCount_.store(0, std::memory_order_relaxed);
     initialized_ = true; lastError_ = oboe::Result::OK;
-    __android_log_print(ANDROID_LOG_INFO, kTag, "initialized: %s %d Hz %d channels, burst %d buffer %d, %s %s",
-      oboe::convertToText(api_), sampleRate_, channels_, framesPerBurst_, bufferSize_,
-      oboe::convertToText(performance_), oboe::convertToText(sharing_));
+
     return true;
   }
   return false;
@@ -81,7 +79,7 @@ bool RemixerAudioEngine::ensureStreamStartedLocked() {
     return false;
   }
   running_.store(true, std::memory_order_relaxed);
-  __android_log_print(ANDROID_LOG_INFO, kTag, "stream started");
+
   return true;
 }
 
@@ -92,16 +90,12 @@ bool RemixerAudioEngine::loadTrackFd(int deckIndex, int fd, int64_t offset, int6
   deck->decoder.setDeckId(deckIndex == 1 ? 'B' : 'A');
   deck->eq.requestReset();
   bool res = deck->decoder.open(fd, offset, length, sampleRate_);
-  __android_log_print(ANDROID_LOG_INFO, kTag, "Deck %d loadTrackFd result=%d", deckIndex, res);
+
   return res;
 }
 
 bool RemixerAudioEngine::playDeck(int deckIndex) {
-  const auto now = std::chrono::system_clock::now().time_since_epoch();
-  const int64_t nowMs = std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
-  const char deckId = (deckIndex == 1) ? 'B' : 'A';
-  __android_log_print(ANDROID_LOG_INFO, "RemixerOboeTrace",
-                      "[PLAY_TRACE] %c CPP t=%lld", deckId, (long long)nowMs);
+
 
   if (!running_.load(std::memory_order_relaxed)) {
     std::lock_guard<std::mutex> lock(controlMutex_);
@@ -117,20 +111,12 @@ bool RemixerAudioEngine::playDeck(int deckIndex) {
   deck->decoder.start();
   deck->playing.store(true, std::memory_order_release);
 
-  const auto stateNow = std::chrono::system_clock::now().time_since_epoch();
-  const int64_t stateMs = std::chrono::duration_cast<std::chrono::milliseconds>(stateNow).count();
-  __android_log_print(ANDROID_LOG_INFO, "RemixerOboeTrace",
-                      "[PLAY_TRACE] %c STATE_APPLIED t=%lld", deckId, (long long)stateMs);
-  __android_log_print(ANDROID_LOG_INFO, kTag, "Deck %d playback started", deckIndex);
+
   return true;
 }
 
 bool RemixerAudioEngine::pauseDeck(int deckIndex) {
-  const auto now = std::chrono::system_clock::now().time_since_epoch();
-  const int64_t nowMs = std::chrono::duration_cast<std::chrono::milliseconds>(now).count();
-  const char deckId = (deckIndex == 1) ? 'B' : 'A';
-  __android_log_print(ANDROID_LOG_INFO, "RemixerOboeTrace",
-                      "[PAUSE_TRACE] %c CPP t=%lld", deckId, (long long)nowMs);
+
 
   auto* deck = getDeck(deckIndex);
   deck->playing.store(false, std::memory_order_release);
@@ -138,11 +124,7 @@ bool RemixerAudioEngine::pauseDeck(int deckIndex) {
     deck->decoder.stop();
   }
 
-  const auto stateNow = std::chrono::system_clock::now().time_since_epoch();
-  const int64_t stateMs = std::chrono::duration_cast<std::chrono::milliseconds>(stateNow).count();
-  __android_log_print(ANDROID_LOG_INFO, "RemixerOboeTrace",
-                      "[PAUSE_TRACE] %c STATE_APPLIED t=%lld", deckId, (long long)stateMs);
-  __android_log_print(ANDROID_LOG_INFO, kTag, "Deck %d playback paused", deckIndex);
+
   return true;
 }
 
@@ -168,7 +150,7 @@ bool RemixerAudioEngine::stop() {
   if (!stream_ || !initialized_) return true;
   auto result = stream_->stop();
   if (result != oboe::Result::OK) { recordError(result); closeLocked(); return false; }
-  __android_log_print(ANDROID_LOG_INFO, kTag, "stream stopped");
+
   return true;
 }
 
@@ -206,7 +188,7 @@ double RemixerAudioEngine::getDuration(int deckIndex) const noexcept {
 void RemixerAudioEngine::release() {
   std::lock_guard<std::mutex> lock(controlMutex_);
   closeLocked();
-  __android_log_print(ANDROID_LOG_INFO, kTag, "stream released");
+
 }
 
 void RemixerAudioEngine::setTestToneVolume(float volume) noexcept {
@@ -214,17 +196,11 @@ void RemixerAudioEngine::setTestToneVolume(float volume) noexcept {
   setVolume(0, volume);
 }
 
-void RemixerAudioEngine::setVolume(int deckIndex, float volume, int seq, int64_t tGesture) noexcept {
+// Keep the bridge signature compatible; trace arguments are intentionally unused.
+void RemixerAudioEngine::setVolume(int deckIndex, float volume, int /*seq*/, int64_t /*tGesture*/) noexcept {
   auto* deck = getDeck(deckIndex);
   float clamped = clampVolume(volume);
   deck->volume.store(clamped, std::memory_order_relaxed);
-  if (seq > 0) {
-    auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::system_clock::now().time_since_epoch()).count();
-    __android_log_print(ANDROID_LOG_INFO, "VOL_TRACE",
-      "seq=%d CPP_ATOMIC deck=%d vol=%.2f deltaGestureToCpp=%lldms",
-      seq, deckIndex, clamped, (long long)(now - tGesture));
-  }
 }
 
 void RemixerAudioEngine::setEq(int deckIndex, int band, float value, bool kill) noexcept {
@@ -283,14 +259,14 @@ oboe::DataCallbackResult RemixerAudioEngine::onAudioReady(oboe::AudioStream* str
       processDeck(1, scratchBuffer_.data(), count, channels);
       for (int32_t i = 0; i < count * channels; ++i) {
         const int32_t index = offset * channels + i;
-        output[index] = std::clamp(output[index] + scratchBuffer_[i], -1.0f, 1.0f);
+        output[index] += scratchBuffer_[i];
       }
       offset += count;
     }
   }
 
-  // EQ boosts can exceed unity even with a single deck. Bound final output consistently.
-  for (int32_t i = 0; i < totalSamples; ++i) output[i] = std::clamp(output[i], -1.0f, 1.0f);
+  // Process the summed signal before clipping so preamp can restore headroom.
+  masterDsp_.process(output, frames, channels, sampleRate_);
   callbackCount_.fetch_add(1, std::memory_order_relaxed);
   return oboe::DataCallbackResult::Continue;
 }

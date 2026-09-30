@@ -9,6 +9,7 @@
 #include "TestTone.h"
 #include "AudioDecoder.h"
 #include "DeckEq.h"
+#include "MasterDsp.h"
 
 namespace remixer {
 static_assert(std::atomic<float>::is_always_lock_free);
@@ -32,6 +33,7 @@ struct DeckChannel {
 class RemixerAudioEngine final : public oboe::AudioStreamDataCallback,
                                  public oboe::AudioStreamErrorCallback {
  public:
+  void setMasterFx(int index, float value) noexcept { masterDsp_.set(index, value); }
   bool initialize();
   bool loadTrackFd(int deckIndex, int fd, int64_t offset, int64_t length);
   bool playDeck(int deckIndex);
@@ -67,6 +69,7 @@ class RemixerAudioEngine final : public oboe::AudioStreamDataCallback,
   std::atomic<bool> toneEnabled_{false};
   std::atomic<uint32_t> callbackCount_{0};
 
+  MasterDsp masterDsp_;
   TestTone tone_;
   DeckChannel decks_[2]; // deck 0 = Deck A, deck 1 = Deck B
   std::vector<float> scratchBuffer_; // Preallocated scratch buffer for real-time mixing

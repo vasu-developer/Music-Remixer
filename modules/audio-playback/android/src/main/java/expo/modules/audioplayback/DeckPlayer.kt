@@ -112,7 +112,6 @@ class DeckPlayer(
                 state = State.PREPARED
                 applyVolumeInternal()
                 val durationSec = (mp.duration.toDouble() / 1000.0).coerceAtLeast(0.0)
-                Log.d(TAG, "Deck $deckId prepared: duration=$durationSec s")
                 if (continuation.isActive) {
                   continuation.resume(durationSec)
                 }
@@ -140,11 +139,9 @@ class DeckPlayer(
             synchronized(lock) {
               if (mediaPlayer === mp) {
                 if (isLooping) {
-                  Log.d(TAG, "Deck $deckId loop engaged, seeking to start")
                   seek(0.0)
                   play()
                 } else {
-                  Log.d(TAG, "Deck $deckId playback completed")
                   state = State.COMPLETED
                   onPlaybackStateChangeListener?.invoke(false)
                   onCompletionListener?.invoke()
@@ -194,17 +191,14 @@ class DeckPlayer(
   } ?: throw IOException("Timed out preparing track on deck $deckId")
 
   fun play(): Boolean = synchronized(lock) {
-    android.util.Log.i("RemixerPlaybackDiag", "[DeckPlayer] play() invoked for deck $deckId (state=$state)")
     val player = mediaPlayer ?: return false
     return try {
       when (state) {
         State.PREPARED, State.PAUSED, State.COMPLETED -> {
           applyVolumeInternal()
           player.start()
-          android.util.Log.i("RemixerPlaybackDiag", "[MediaPlayer] player.start() EXECUTED for deck $deckId")
           state = State.STARTED
           applyPlaybackParamsInternal()
-          Log.d(TAG, "Deck $deckId started playing")
           onPlaybackStateChangeListener?.invoke(true)
           true
         }
@@ -228,7 +222,6 @@ class DeckPlayer(
       if (state == State.STARTED) {
         player.pause()
         state = State.PAUSED
-        Log.d(TAG, "Deck $deckId paused")
         onPlaybackStateChangeListener?.invoke(false)
         true
       } else {
@@ -345,9 +338,8 @@ class DeckPlayer(
     val player = mediaPlayer ?: return
     if (state != State.IDLE && state != State.INITIALIZED && state != State.PREPARING && state != State.ERROR) {
       try {
-        val t0 = System.currentTimeMillis()
+
         player.setVolume(volume, volume)
-        android.util.Log.i("RemixerVolumeDiag", "[DIAG:MEDIAPLAYER_CALL] deck=$deckId player.setVolume($volume) executed at t=$t0 ms (state=$state)")
       } catch (e: Exception) {
         Log.w(TAG, "Failed to apply volume on deck $deckId: ${e.message}")
       }

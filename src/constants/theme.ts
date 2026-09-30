@@ -4,10 +4,10 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export const DJColors = {
   // Console chassis & plates
-  chassis: '#090A0D',
-  surface: '#111317',
-  surfaceRaised: '#171A21',
-  surfaceInset: '#0E1014',
+  chassis: '#10091B',
+  surface: '#1B1129',
+  surfaceRaised: '#2A1940',
+  surfaceInset: '#100B1B',
 
   // Borders
   borderSubtle: '#21252D',
@@ -15,16 +15,16 @@ export const DJColors = {
   borderHighlight: '#3E4554',
 
   // Deck accents
-  deckA: '#00E5FF', // Electric Cyan
-  deckAGlow: 'rgba(0, 229, 255, 0.25)',
-  deckADark: '#08333D',
+  deckA: '#B785FF', // Neon lavender
+  deckAGlow: 'rgba(183, 133, 255, 0.25)',
+  deckADark: '#382054',
 
-  deckB: '#FF9100', // Amber Flare
-  deckBGlow: 'rgba(255, 145, 0, 0.25)',
-  deckBDark: '#472900',
+  deckB: '#44F4D4', // Neon mint
+  deckBGlow: 'rgba(68, 244, 212, 0.25)',
+  deckBDark: '#104339',
 
   // Functional accents
-  master: '#FF2A4D', // Red indicator
+  master: '#FF66C9', // Pink master accent
   cue: '#00B0FF', // Cue blue
   sync: '#00E676', // Green active
   syncGlow: 'rgba(0, 230, 118, 0.25)',
@@ -33,9 +33,9 @@ export const DJColors = {
   // Typography
   textPrimary: '#F1F3F7',
   textSecondary: '#8B93A2',
-  textMuted: '#4D5462',
-  textDeckA: '#66EFFF',
-  textDeckB: '#FFA833',
+  textMuted: '#9584AD',
+  textDeckA: '#CEACFF',
+  textDeckB: '#82FFE5',
 
   // Hardware controls
   platter: '#13151A',

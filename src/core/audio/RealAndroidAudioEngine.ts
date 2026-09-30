@@ -1,5 +1,5 @@
 import { crossfaderGain } from './crossfader';
-import { ControlTrace, logControlTrace } from './controlTrace';
+import { ControlTrace } from './controlTrace';
 import { DeckId, Track, EQBand, EffectType, StereoMeter, CrossfaderCurve } from '@/types';
 import {
   IAudioEngine,
@@ -26,6 +26,19 @@ interface DeckAudioInternalState {
 }
 
 export class RealAndroidAudioEngine implements IAudioEngine {
+  masterFxIssue(): string | null {
+    if (!NativeAudioEngine.supportsMasterFx()) return 'Install the updated APK to enable master sound controls.';
+    if (Object.values(this.decks).some(d => d.track && d.backend === 'media'))
+      return 'A deck is using fallback playback, which does not support master sound. Reload that song with native playback.';
+    if (!Object.values(this.decks).some(d => d.backend === 'cpp') && Object.values(this.decks).some(d => d.backend === 'simulation'))
+      return 'Load a real song from the library to use master sound. Demo tracks are simulated.';
+    return null;
+  }
+  setMasterFx(index: number, value: number): void {
+    const issue = this.masterFxIssue();
+    if (issue && !(index === 16 && value === 0 && NativeAudioEngine.supportsMasterFx())) throw new Error(issue);
+    NativeAudioEngine.setMasterFx(index, value);
+  }
   private static instance: RealAndroidAudioEngine | null = null;
 
   private isInitialized = false;
@@ -264,7 +277,7 @@ export class RealAndroidAudioEngine implements IAudioEngine {
   }
 
   async play(deckId: DeckId, trace?: ControlTrace): Promise<void> {
-    logControlTrace(trace, 'ENGINE_PLAY', `deck=${deckId}`);
+
     const deck = this.decks[deckId];
     if (!deck.track || deck.backend === 'none') throw new Error('No playable track loaded');
     let started = true;
@@ -281,7 +294,7 @@ export class RealAndroidAudioEngine implements IAudioEngine {
   }
 
   async pause(deckId: DeckId, trace?: ControlTrace): Promise<void> {
-    logControlTrace(trace, 'ENGINE_PAUSE', `deck=${deckId}`);
+
     const deck = this.decks[deckId];
     let paused = true;
     if (deck.backend === 'cpp') paused = await NativeAudioEngine.pause(deckId, trace);
@@ -313,9 +326,6 @@ export class RealAndroidAudioEngine implements IAudioEngine {
   }
 
   async setVolume(deckId: DeckId, volume: number, seq?: number, tGesture?: number): Promise<void> {
-    if (seq && seq > 0) {
-      console.log(`[VOL_TRACE] seq=${seq} ENGINE_SET_VOLUME deck=${deckId} vol=${volume.toFixed(2)} deltaFromGesture=${Date.now() - (tGesture ?? 0)}ms`);
-    }
     this.decks[deckId].volume = Math.max(0, Math.min(1, volume));
     if (this.decks[deckId].backend === 'cpp') this.applyNativeDirectVolume(deckId, seq, tGesture);
     else this.queueMixer();

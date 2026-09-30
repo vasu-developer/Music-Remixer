@@ -64,6 +64,8 @@ export const SettingsScreen: React.FC = () => {
       </View>
       <View style={styles.card}>
         <Text style={styles.cardTitle}>EQUALIZERS</Text>
+        <Action label="System audio · other apps" onPress={() => router.push('/system-audio')} />
+        <Action label="Master sound · 10-band EQ & tone" onPress={() => router.push('/equalizer')} />
         <Text style={styles.curveDesc}>Reset bass, mid and treble to neutral and turn off all band kills.</Text>
         <Action label="Reset Deck A EQ" onPress={() => { void useMixerStore.getState().resetEQ('A'); }} />
         <Action label="Reset Deck B EQ" onPress={() => { void useMixerStore.getState().resetEQ('B'); }} />

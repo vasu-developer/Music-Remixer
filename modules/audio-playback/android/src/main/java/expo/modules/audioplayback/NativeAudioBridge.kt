@@ -22,6 +22,7 @@ object NativeAudioBridge {
 
   fun deckToIndex(deckId: String): Int = if (deckId.equals("B", ignoreCase = true)) 1 else 0
 
+  external fun setMasterFx(index: Int, value: Float)
   external fun initialize(): Boolean
   external fun loadTrackFd(deckIndex: Int, fd: Int, offset: Long, length: Long): Boolean
   external fun playDeck(deckIndex: Int): Boolean
